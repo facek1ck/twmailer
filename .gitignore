@@ -77,6 +77,10 @@ dkms.conf
 .AppleDouble
 .LSOverride
 
+## App packaging
+*.dSYM.zip
+*.dSYM
+
 # Icon must end with two \r
 Icon
 
@@ -98,5 +102,19 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# out folder
+out/
+
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
 
 # End of https://www.gitignore.io/api/c,linux,macos
