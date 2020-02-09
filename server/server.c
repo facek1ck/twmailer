@@ -21,9 +21,9 @@ int main()
     server_address.sin_addr.s_addr = INADDR_ANY;
 
     //bind the socket to the specified IP and port
-    bind(server_socket, (struct sockaddr *)&server_socket, BUF - 1);
+    bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address));
 
-    listen(server_socket, 20);
+    listen(server_socket, 5);
 
     int client_socket;
     client_socket = accept(server_socket, NULL, NULL);
