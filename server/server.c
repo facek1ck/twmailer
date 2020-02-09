@@ -25,8 +25,9 @@ int main()
 
     listen(server_socket, 5);
 
+    //accept a connection from client
     int client_socket;
-    client_socket = accept(server_socket, NULL, NULL);
+    client_socket = accept(server_socket, NULL, NULL); //replace NULL with structs
 
     //send message to client
     send(client_socket, server_message, BUF - 1, 0);
