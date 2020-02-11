@@ -5,13 +5,17 @@ This is an educational project for VSYS @FHTW
 
 ### Server
 
+```bash 
 make server
 cd out
 ./myserver
+```
 
 
 ### Client(s)
 
+```bash
 make client
 cd out
 ./myclient
+```
