@@ -14,7 +14,7 @@ int handleClient(int client_socket)
         if (size > 0)
         {
             buffer[size] = '\0';
-            line = strtok(strdup(buffer), '\n');
+            line = strtok(strdup(buffer), "\n");
 
             if (strcasecmp("LOGIN", line) == 0)
             {
@@ -82,18 +82,68 @@ int handleClient(int client_socket)
     return EXIT_SUCCESS;
 }
 
-//int ldapLogin(char *line);
-int saveMail(char *line)
+int ldapLogin(char *line)
 {
-    char *userpath = strcat(strcat(path, "/"), username);
-    mkdir(path, 0777);
-    mkdir(userpath, 0777);
-    FILE *fPtr;
-    fPtr = fopen(strcat(strcat(userpath, "/"), strcat(rand(), ".txt")), "a");
-
     return 0;
 }
 
-void listMails(int client_socket);
-void readMail(int client_socket, int msgNr);
-int deleteMail(int client_socket, int msgNr);
+int saveMail(char *line)
+{
+    char *recieverPath;
+    char receiver[8];
+    char sender[8];
+    mkdir(path, 0777);
+    FILE *fPtr;
+
+    int lineCount = 0;
+    while (line)
+    {
+        if (lineCount == 1)
+        {
+            strcpy(sender, line);
+        }
+        else if (lineCount == 2) //reciever's username
+        {
+            strcpy(receiver, line);
+            if (strlen(receiver) > 8)
+            {
+                return 0;
+            }
+            recieverPath = strcat(strcat(path, "/"), receiver);
+            fPtr = fopen(strcat(strcat(recieverPath, "/"), strcat(receiver, ".txt")), "a");
+            if (fPtr == NULL)
+            {
+                return 0;
+            }
+            fputs(sender, fPtr); //put senderName
+            fputc('\n', fPtr);
+            fputs(receiver, fPtr); //put recieverName
+            fputc('\n', fPtr);
+        }
+        else if (lineCount == 3)
+        {
+            fputs(line, fPtr); //put subject
+            fputc('\n', fPtr);
+        }
+        else if (lineCount > 3)
+        {
+            fputs(line, fPtr);
+            fputc('\n', fPtr);
+        }
+
+        line = strtok(NULL, "\n");
+        lineCount++;
+    }
+    return 0;
+}
+
+void listMails(int client_socket)
+{
+}
+void readMail(int client_socket, char *line)
+{
+}
+int deleteMail(int client_socket, char *line)
+{
+    return 0;
+}
