@@ -1,3 +1,4 @@
+#define _DEFAULT_SOURCE
 #include "serverFunctions.h"
 
 int handleClient(int client_socket)
@@ -42,12 +43,16 @@ int handleClient(int client_socket)
             }
             else if (strcmp("LIST", line) == 0)
             {
-                listMails(client_socket);
+                line = strtok(NULL, "\n");
+                listMails(client_socket, line);
             }
             else if (strcmp("READ", line) == 0)
             {
                 line = strtok(NULL, "\n");
-                readMail(client_socket, line);
+                char *username = line;
+                line = strtok(NULL, "\n");
+                char *msgNr = line;
+                readMail(client_socket, username, msgNr);
             }
             else if (strcmp("DEL", line) == 0)
             {
@@ -137,19 +142,61 @@ int saveMail(char *line)
     return 0;
 }
 
-void listMails(int client_socket)
+void listMails(int client_socket, char *username)
 {
-}
-void readMail(int client_socket, char *line)
-{
-    int fileCount;
+    int fileCount = 1;
     //path to username
 
     DIR *dirp;
     struct dirent *entry;
     char *userpath = strcat(strcat(path, "/"), username);
 
+    fileCount = getMailCount(userpath);
+    printf("File count: " + fileCount);
+    printf("Overview: \n");
     dirp = opendir(userpath);
+    fileCount = 0;
+    while ((entry = readdir(dirp)) != NULL)
+    {
+        if (entry->d_type == DT_REG)
+        {
+            if (strstr(entry->d_name, ".txt"))
+            {
+                FILE *file = fopen(entry->d_name, "r");
+                char line[256];
+                int lineCount = 0;
+                while (fgets(line, sizeof(line), file))
+                {
+                    if (lineCount == 2)
+                    {
+                        printf(strcat(strcat(fileCount, " - "), line));
+                        fileCount++;
+                        break;
+                    }
+                    lineCount++;
+                }
+            }
+        }
+    }
+}
+void readMail(int client_socket, char *username, char *msgNr)
+{
+}
+
+int deleteMail(int client_socket, char *line)
+{
+    return 0;
+}
+
+int getMailCount(char *path)
+{
+    int fileCount = 0;
+    //path to username
+
+    DIR *dirp;
+    struct dirent *entry;
+
+    dirp = opendir(path);
     while ((entry = readdir(dirp)) != NULL)
     {
         if (entry->d_type == DT_REG)
@@ -157,9 +204,5 @@ void readMail(int client_socket, char *line)
             fileCount++;
         }
     }
-    printf("filecount:" + fileCount);
-}
-int deleteMail(int client_socket, char *line)
-{
-    return 0;
+    return fileCount;
 }
