@@ -3,11 +3,15 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 
 #define BUF 256
-int main()
+int main(int argc, char *argv[])
 {
+    int port = atoi(argv[2]);
+    int ip = inet_addr(argv[1]);
+
     // create a socket
     int network_socket;
     network_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -15,8 +19,8 @@ int main()
     //specify an address for the socket
     struct sockaddr_in server_address;
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(9002);
-    server_address.sin_addr.s_addr = INADDR_ANY;
+    server_address.sin_port = htons(port);
+    server_address.sin_addr.s_addr = ip;
 
     int connection_status = connect(network_socket, (struct sockaddr *)&server_address, sizeof(server_address));
 
