@@ -2,8 +2,8 @@
 
 int main(int argc, char *argv[])
 {
-    int port = atoi(argv[1]);
-    char path[255] = argv[2];
+    port = atoi(argv[1]);
+    path = argv[2];
 
     char server_message[BUF] = "You have reached the server!";
     //create the server socket

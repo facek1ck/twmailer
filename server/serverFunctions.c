@@ -81,3 +81,19 @@ int handleClient(int client_socket)
     close(client_socket);
     return EXIT_SUCCESS;
 }
+
+//int ldapLogin(char *line);
+int saveMail(char *line)
+{
+    char *userpath = strcat(strcat(path, "/"), username);
+    mkdir(path, 0777);
+    mkdir(userpath, 0777);
+    FILE *fPtr;
+    fPtr = fopen(strcat(strcat(userpath, "/"), strcat(rand(), ".txt")), "a");
+
+    return 0;
+}
+
+void listMails(int client_socket);
+void readMail(int client_socket, int msgNr);
+int deleteMail(int client_socket, int msgNr);

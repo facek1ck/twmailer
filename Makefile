@@ -1,6 +1,6 @@
 all: server client
 
-server: server/server.c
+server: server/server.c server/serverFunctions.c server/serverFunctions.h
 		gcc -g -Wall -o out/myserver server/server.c
 
 client: client/client.c
