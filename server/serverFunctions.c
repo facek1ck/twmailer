@@ -142,6 +142,22 @@ void listMails(int client_socket)
 }
 void readMail(int client_socket, char *line)
 {
+    int fileCount;
+    //path to username
+
+    DIR *dirp;
+    struct dirent *entry;
+    char *userpath = strcat(strcat(path, "/"), username);
+
+    dirp = opendir(userpath);
+    while ((entry = readdir(dirp)) != NULL)
+    {
+        if (entry->d_type == DT_REG)
+        {
+            fileCount++;
+        }
+    }
+    printf("filecount:" + fileCount);
 }
 int deleteMail(int client_socket, char *line)
 {
