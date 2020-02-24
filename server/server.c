@@ -1,14 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
+#include "serverFunctions.h"
 
-#define BUF 256
-
-int main()
+int main(int argc, char *argv[])
 {
+    int port = atoi(argv[1]);
+    char path[255] = argv[2];
+
     char server_message[BUF] = "You have reached the server!";
     //create the server socket
     int server_socket;
@@ -17,7 +13,7 @@ int main()
     //definde the server address
     struct sockaddr_in server_address;
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(9002);
+    server_address.sin_port = htons(port);
     server_address.sin_addr.s_addr = INADDR_ANY;
 
     //bind the socket to the specified IP and port
