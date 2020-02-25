@@ -6,7 +6,6 @@ int handleClient(int client_socket)
     int size;
     char buffer[BUF];
     char *line = malloc(BUF);
-
     do
     {
         memset(buffer, 0, sizeof(buffer));
@@ -33,12 +32,14 @@ int handleClient(int client_socket)
             {
                 if (saveMail(line) == 1)
                 {
+                    printf("message saved");
                     strcpy(buffer, "OK\n");
                 }
                 else
                 {
                     strcpy(buffer, "ERR\n");
                 }
+                printf("\nbuffer before sending: %s", buffer);
                 send(client_socket, buffer, strlen(buffer), 0);
             }
             else if (strcmp("LIST", line) == 0)
@@ -102,15 +103,17 @@ int saveMail(char *line)
     int lineCount = 0;
     while (line)
     {
-        if (lineCount == 2) //reciever's username
+        if (lineCount == 1) //reciever's username
         {
-            strcpy(receiver, line);
+            strncpy(receiver, line, 10);
             if (strlen(receiver) > 8)
             {
                 printf("here\n");
                 return 0;
             }
             recieverPath = strcat(strcat(path, "/"), receiver);
+            mkdir(recieverPath, 0777);
+            printf("folder created.\n");
             fPtr = fopen(strcat(strcat(recieverPath, "/"), strcat(receiver, ".txt")), "w+");
             if (fPtr == NULL)
             {
@@ -119,21 +122,25 @@ int saveMail(char *line)
             }
             fputs(receiver, fPtr); //put recieverName
             fputc('\n', fPtr);
+            printf("put receiver\n");
         }
-        else if (lineCount == 3)
+        else if (lineCount == 2)
         {
             fputs(line, fPtr); //put subject
             fputc('\n', fPtr);
+            printf("put subject");
         }
-        else if (lineCount > 3)
+        else if (lineCount > 2)
         {
             fputs(line, fPtr);
             fputc('\n', fPtr);
+            printf("put line");
         }
-
+        
         line = strtok(NULL, "\n");
         lineCount++;
     }
+    printf("message finished");
     if (fPtr != NULL)
     {
         fclose(fPtr);
