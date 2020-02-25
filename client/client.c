@@ -1,16 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+#include "clientFunctions.h"
 
-#define BUF 256
 int main(int argc, char *argv[])
 {
     int port = atoi(argv[2]);
     int ip = inet_addr(argv[1]);
+    char buffer[BUF];
+    int size;
+    int menuChoice;
 
     // create a socket
     int network_socket;
@@ -28,16 +24,116 @@ int main(int argc, char *argv[])
     if (connection_status == -1)
     {
         printf("\nThere was an error establishing a connection to the remote socket \n\n");
+        return EXIT_FAILURE;
+    }
+    else
+    {
+        printf("Connection with server (%s) established\n", inet_ntoa(server_address.sin_addr));
+        size = recv(network_socket, buffer, BUF - 1, 0);
+        buffer[size] = '\0';
+        printf("%s", buffer);
     }
 
-    //recieve data from the server
-    char server_response[BUF];
-    recv(network_socket, &server_response, BUF - 1, 0);
+    //Login procedure
 
-    // print server response
-    printf("The Server sent data %s", server_response);
+    char username[10];
+    char *password;
+    printf("Username:");
+    scanf("%s", username);
+    password = getpass("Password:"); // hide he user input
+    sprintf(buffer, "%s%c%s%c%s%c", "LOGIN", '\n', username, '\n', password, '\n');
+    send(network_socket, buffer, strlen(buffer), 0);
+    memset(buffer, 0, sizeof(buffer));
+    size = recv(network_socket, buffer, BUF - 1, 0);
 
-    //close the socket
+    if (size > 0)
+    {
+        printf("lol");
+        buffer[size] = '\0';
+        if (!(strcmp(buffer, "OK\n") == 0)) //if the login was not successfull
+        {
+            printf("%s\n", buffer);
+            return 1;
+        }
+    }
+    do
+    {
+        memset(buffer, 0, sizeof(buffer));
+        printMainMenu();
+        printf("Your choice:");
+        scanf(" %d", &menuChoice);
+        while (getchar() != '\n')
+            ;
+        switch (menuChoice)
+        {
+        case 1:
+        {
+            char new_str[BUF];
+            strcpy(buffer, "SEND\n");
+            do
+            {
+                fgets(new_str, BUF - 1, stdin);
+                strcat(buffer, new_str);
+            } while (strcmp(new_str, ".\n") != 0);
+            send(network_socket, buffer, strlen(buffer), 0);
+            break;
+        }
+        case 2:
+        {
+            strcpy(buffer, "LIST\n");
+            send(network_socket, buffer, strlen(buffer), 0);
+            break;
+        }
+        case 3:
+        {
+            char new_str[10];
+            int msgNr = 0;
+            strcpy(buffer, "READ\n");
+            printf("Enter message number: ");
+            scanf(" %d", &msgNr);
+            while (getchar() != '\n')
+                ;
+            sprintf(new_str, "%d", msgNr);
+            strcat(buffer, new_str);
+            send(network_socket, buffer, strlen(buffer), 0);
+            break;
+        }
+        case 4:
+        {
+            char new_str[10];
+            int msgNr = 0;
+            strcpy(buffer, "DEL\n");
+            printf("Enter message number: ");
+            scanf(" %d", &msgNr);
+            while (getchar() != '\n')
+                ;
+            sprintf(new_str, "%d", msgNr);
+            strcat(buffer, new_str);
+            send(network_socket, buffer, strlen(buffer), 0);
+            break;
+        }
+        case 5:
+        {
+            close(network_socket);
+            signalH(EXIT_SUCCESS);
+            break;
+        }
+        default:
+        {
+            printf("Wrong menu entry.");
+            continue;
+        }
+        }
+        size = recv(network_socket, buffer, BUF - 1, 0);
+        if (size > 0)
+        {
+            buffer[size] = '\0';
+            printf("%s", buffer);
+        }
+        memset(buffer, 0, sizeof buffer);
+        fflush(stdout);
+        fflush(stdin);
+    } while (strcmp(buffer, "quit\n") != 0);
     close(network_socket);
-    return 0;
+    return EXIT_SUCCESS;
 }

@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <dirent.h>
+#include <arpa/inet.h>
 
 #define BUF 1024
 char *username;
@@ -18,8 +19,9 @@ int port;
 int handleClient(int client_socket);
 int ldapLogin(char *line); // set global char *username;
 int saveMail(char *line);
-void listMails(int client_socket);
-void readMail(int client_socket, char *line);
+void listMails(int client_socket, char *username);
+void readMail(int client_socket, char *username, char *msgNr);
 int deleteMail(int client_socket, char *line);
+int getMailCount(char *path);
 
 #endif

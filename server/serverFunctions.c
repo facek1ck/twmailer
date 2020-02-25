@@ -89,25 +89,20 @@ int handleClient(int client_socket)
 
 int ldapLogin(char *line)
 {
-    return 0;
+    return 1; //TODO: implement LDAP login
 }
 
 int saveMail(char *line)
 {
     char *recieverPath;
-    char receiver[8];
-    char sender[8];
+    char receiver[10];
     mkdir(path, 0777);
     FILE *fPtr;
 
     int lineCount = 0;
     while (line)
     {
-        if (lineCount == 1)
-        {
-            strcpy(sender, line);
-        }
-        else if (lineCount == 2) //reciever's username
+        if (lineCount == 2) //reciever's username
         {
             strcpy(receiver, line);
             if (strlen(receiver) > 8)
@@ -120,8 +115,6 @@ int saveMail(char *line)
             {
                 return 0;
             }
-            fputs(sender, fPtr); //put senderName
-            fputc('\n', fPtr);
             fputs(receiver, fPtr); //put recieverName
             fputc('\n', fPtr);
         }
@@ -152,7 +145,7 @@ void listMails(int client_socket, char *username)
     char *userpath = strcat(strcat(path, "/"), username);
 
     fileCount = getMailCount(userpath);
-    printf("File count: " + fileCount);
+    printf("File count: %d ", fileCount);
     printf("Overview: \n");
     dirp = opendir(userpath);
     fileCount = 0;
@@ -169,7 +162,7 @@ void listMails(int client_socket, char *username)
                 {
                     if (lineCount == 2)
                     {
-                        printf(strcat(strcat(fileCount, " - "), line));
+                        printf("%d - %s", fileCount, line);
                         fileCount++;
                         break;
                     }
