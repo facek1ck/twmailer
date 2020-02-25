@@ -107,12 +107,14 @@ int saveMail(char *line)
             strcpy(receiver, line);
             if (strlen(receiver) > 8)
             {
+                printf("here\n");
                 return 0;
             }
             recieverPath = strcat(strcat(path, "/"), receiver);
-            fPtr = fopen(strcat(strcat(recieverPath, "/"), strcat(receiver, ".txt")), "a");
+            fPtr = fopen(strcat(strcat(recieverPath, "/"), strcat(receiver, ".txt")), "w+");
             if (fPtr == NULL)
             {
+                printf("here2\n");
                 return 0;
             }
             fputs(receiver, fPtr); //put recieverName
@@ -132,7 +134,11 @@ int saveMail(char *line)
         line = strtok(NULL, "\n");
         lineCount++;
     }
-    return 0;
+    if (fPtr != NULL)
+    {
+        fclose(fPtr);
+    }
+    return 1;
 }
 
 void listMails(int client_socket, char *username)
