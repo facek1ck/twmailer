@@ -102,7 +102,7 @@ int saveMail(char *line)
     int lineCount = 0;
     while (line)
     {
-        if (lineCount == 2) //reciever's username
+        if (lineCount == 1) //reciever's username
         {
             strcpy(receiver, line);
             if (strlen(receiver) > 8)
@@ -111,6 +111,7 @@ int saveMail(char *line)
                 return 0;
             }
             recieverPath = strcat(strcat(path, "/"), receiver);
+            mkdir(recieverPath, 0777);
             fPtr = fopen(strcat(strcat(recieverPath, "/"), strcat(receiver, ".txt")), "w+");
             if (fPtr == NULL)
             {
@@ -120,12 +121,12 @@ int saveMail(char *line)
             fputs(receiver, fPtr); //put recieverName
             fputc('\n', fPtr);
         }
-        else if (lineCount == 3)
+        else if (lineCount == 2)
         {
             fputs(line, fPtr); //put subject
             fputc('\n', fPtr);
         }
-        else if (lineCount > 3)
+        else if (lineCount > 2)
         {
             fputs(line, fPtr);
             fputc('\n', fPtr);
