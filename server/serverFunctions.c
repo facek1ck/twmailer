@@ -95,7 +95,7 @@ int ldapLogin(char *line)
 
 int saveMail(char *line)
 {
-    char *recieverPath;
+    char receiverPath[255], receiverFilePath[255];
     char receiver[10];
     mkdir(path, 0777);
     FILE *fPtr;
@@ -103,7 +103,7 @@ int saveMail(char *line)
     int lineCount = 0;
     while (line)
     {
-        if (lineCount == 1) //reciever's username
+        if (lineCount == 1) //receiver's username
         {
             strncpy(receiver, line, 10);
             if (strlen(receiver) > 8)
@@ -111,16 +111,17 @@ int saveMail(char *line)
                 printf("here\n");
                 return 0;
             }
-            recieverPath = strcat(strcat(path, "/"), receiver);
-            mkdir(recieverPath, 0777);
+            snprintf(receiverPath, sizeof(receiverPath), "%s/%s", path, receiver);
+            mkdir(receiverPath, 0777);
             printf("folder created.\n");
-            fPtr = fopen(strcat(strcat(recieverPath, "/"), strcat(receiver, ".txt")), "w+");
+            snprintf(receiverFilePath, sizeof(receiverFilePath), "%s/%d.txt", receiverPath, rand());
+            fPtr = fopen(receiverFilePath, "w+");
             if (fPtr == NULL)
             {
                 printf("here2\n");
                 return 0;
             }
-            fputs(receiver, fPtr); //put recieverName
+            fputs(receiver, fPtr); //put receiverName
             fputc('\n', fPtr);
             printf("put receiver\n");
         }
@@ -136,7 +137,7 @@ int saveMail(char *line)
             fputc('\n', fPtr);
             printf("put line");
         }
-        
+
         line = strtok(NULL, "\n");
         lineCount++;
     }
