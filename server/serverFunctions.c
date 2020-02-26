@@ -97,7 +97,7 @@ int ldapLogin(char *line)
         lineCount++;
     }
 
-    return 1; //TODO: Remove this when in FH Network
+    //return 1; //TODO: Remove this when in FH Network
 
     LDAP *ld;                /* LDAP resource handle */
     LDAPMessage *result, *e; /* LDAP result handle */
@@ -108,13 +108,14 @@ int ldapLogin(char *line)
 
     BerValue *servercredp;
     BerValue cred;
-    cred.bv_val = (char *)BIND_PW;
+    cred.bv_val = BIND_PW;
     cred.bv_len = strlen(BIND_PW);
     int i, rc = 0;
 
     sprintf(filter, "(uid=%s)", username);
+    printf("Try login for: %s\n", filter);
 
-    const char *attribs[] = {"uid", "cn", "sn", "dn", NULL}; /* attribute array for search */
+    const char *attribs[] = {"uid", "cn", NULL}; /* attribute array for search */
 
     int ldapversion = LDAP_VERSION3;
 
@@ -150,9 +151,14 @@ int ldapLogin(char *line)
         ldap_unbind_ext_s(ld, NULL, NULL);
         return 0;
     }
+    else
+    {
+        printf("bind successful\n");
+    }
 
     /* perform ldap search */
     rc = ldap_search_ext_s(ld, SEARCHBASE, SCOPE, filter, (char **)attribs, 0, NULL, NULL, NULL, 500, &result);
+
     if (rc != LDAP_SUCCESS)
     {
         fprintf(stderr, "LDAP search error: %s\n", ldap_err2string(rc));
@@ -160,53 +166,31 @@ int ldapLogin(char *line)
         return 0;
     }
 
-    printf("\n");
-
+    if (ldap_count_entries(ld, result) != 1)
+    {
+        return 0;
+    }
+    //Takes the result makes new binding with the user's name and password
     if (ldap_first_entry(ld, result) != NULL)
     {
-
         e = ldap_first_entry(ld, result);
+        strcpy(filter, ldap_get_dn(ld, e));
+        printf("FILTER: %s\n", filter);
 
-        if (ldap_first_entry(ld, result) != NULL)
-            printf("DN: %s\n", ldap_get_dn(ld, e));
+        cred.bv_val = password;
+        cred.bv_len = strlen(password);
+        rc = ldap_sasl_bind_s(ld, filter, LDAP_SASL_SIMPLE, &cred, NULL, NULL, &servercredp);
 
-        /* Now print the attributes and values of each found entry */
-        for (attribute = ldap_first_attribute(ld, e, &ber);
-             attribute != NULL; attribute = ldap_next_attribute(ld, e, ber))
+        if (rc != LDAP_SUCCESS)
         {
-            if ((vals = ldap_get_values_len(ld, e, attribute)) != NULL)
-            {
-                for (i = 0; i < ldap_count_values_len(vals); i++)
-                {
-                    printf("\t%s: %s\n", attribute, vals[i]->bv_val);
-                }
-                ldap_value_free_len(vals);
-            }
-
-            cred.bv_val = (char *)&password;
-            cred.bv_len = strlen((char *)&password);
-            ldap_sasl_bind_s(ld, BIND_USER, LDAP_SASL_SIMPLE, &cred, NULL, NULL, &servercredp);
-
-            /* free memory used to store the attribute */
-            ldap_memfree(attribute);
+            fprintf(stderr, "LDAP search error: %s\n", ldap_err2string(rc));
+            ldap_unbind_ext_s(ld, NULL, NULL);
+            return 0;
         }
-
-        /* free memory used to store the value structure */
-        if (ber != NULL)
-            ber_free(ber, 0);
-
-        printf("\n");
-    }
-    else
-    {
-        printf("LDAP login failed\n");
-        ldap_unbind_ext_s(ld, NULL, NULL);
-        return 0;
     }
 
     /* free memory used for result */
     ldap_msgfree(result);
-    printf("LDAP login suceeded\n");
 
     ldap_unbind_ext_s(ld, NULL, NULL);
     return 1;
