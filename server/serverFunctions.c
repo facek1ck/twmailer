@@ -1,5 +1,6 @@
 #define _DEFAULT_SOURCE
 #include "serverFunctions.h"
+#include <time.h>
 
 int handleClient(int client_socket)
 {
@@ -15,7 +16,6 @@ int handleClient(int client_socket)
         {
             buffer[size] = '\0';
             line = strtok(strdup(buffer), "\n");
-
             if (strcasecmp("LOGIN", line) == 0)
             {
                 if (ldapLogin(line) == 1)
@@ -32,20 +32,17 @@ int handleClient(int client_socket)
             {
                 if (saveMail(line) == 1)
                 {
-                    printf("message saved");
                     strcpy(buffer, "OK\n");
                 }
                 else
                 {
                     strcpy(buffer, "ERR\n");
                 }
-                printf("\nbuffer before sending: %s", buffer);
                 send(client_socket, buffer, strlen(buffer), 0);
             }
             else if (strcmp("LIST", line) == 0)
             {
-                line = strtok(NULL, "\n");
-                listMails(client_socket, line);
+                listMails(client_socket);
             }
             else if (strcmp("READ", line) == 0)
             {
@@ -83,13 +80,13 @@ int handleClient(int client_socket)
         fflush(stdin);
     } while (strncmp(buffer, "quit", 4) != 0);
 
-    printf("Client closed remote socket\n");
     close(client_socket);
     return EXIT_SUCCESS;
 }
 
 int ldapLogin(char *line)
 {
+    // strcpy(username, "if18b101");
     return 1; //TODO: implement LDAP login
 }
 
@@ -108,40 +105,34 @@ int saveMail(char *line)
             strncpy(receiver, line, 10);
             if (strlen(receiver) > 8)
             {
-                printf("here\n");
                 return 0;
             }
             snprintf(receiverPath, sizeof(receiverPath), "%s/%s", path, receiver);
             mkdir(receiverPath, 0777);
-            printf("folder created.\n");
+            srand(time(0));
             snprintf(receiverFilePath, sizeof(receiverFilePath), "%s/%d.txt", receiverPath, rand());
             fPtr = fopen(receiverFilePath, "w+");
             if (fPtr == NULL)
             {
-                printf("here2\n");
                 return 0;
             }
             fputs(receiver, fPtr); //put receiverName
             fputc('\n', fPtr);
-            printf("put receiver\n");
         }
         else if (lineCount == 2)
         {
             fputs(line, fPtr); //put subject
             fputc('\n', fPtr);
-            printf("put subject");
         }
         else if (lineCount > 2)
         {
             fputs(line, fPtr);
             fputc('\n', fPtr);
-            printf("put line");
         }
 
         line = strtok(NULL, "\n");
         lineCount++;
     }
-    printf("message finished");
     if (fPtr != NULL)
     {
         fclose(fPtr);
@@ -149,42 +140,53 @@ int saveMail(char *line)
     return 1;
 }
 
-void listMails(int client_socket, char *username)
+void listMails(int client_socket)
 {
-    int fileCount = 1;
+    int fileCount = 0;
     //path to username
+    char buffer[BUF];
 
     DIR *dirp;
     struct dirent *entry;
-    char *userpath = strcat(strcat(path, "/"), username);
+    char userpath[100];
+
+    snprintf(userpath, sizeof(userpath), "%s/%s", path, "if18b101");
 
     fileCount = getMailCount(userpath);
-    printf("File count: %d ", fileCount);
-    printf("Overview: \n");
     dirp = opendir(userpath);
     fileCount = 0;
+
     while ((entry = readdir(dirp)) != NULL)
     {
         if (entry->d_type == DT_REG)
         {
-            if (strstr(entry->d_name, ".txt"))
+            char filePath[256];
+            snprintf(filePath, sizeof(filePath) + sizeof(userpath), "%s/%s", userpath, entry->d_name);
+            FILE *file = fopen(filePath, "r");
+            char line[256];
+            int lineCount = 0;
+            while (fgets(line, sizeof(line), file))
             {
-                FILE *file = fopen(entry->d_name, "r");
-                char line[256];
-                int lineCount = 0;
-                while (fgets(line, sizeof(line), file))
+                if (lineCount == 1)
                 {
-                    if (lineCount == 2)
+                    if (fileCount == 0)
                     {
-                        printf("%d - %s", fileCount, line);
-                        fileCount++;
-                        break;
+                        sprintf(buffer, "%d - %s", fileCount, line);
                     }
-                    lineCount++;
+                    else
+                    {
+                        sprintf(buffer, "%s\n%d - %s", buffer, fileCount, line);
+                    }
+                    fileCount++;
+                    break;
                 }
+                lineCount++;
             }
+            fclose(file);
         }
     }
+    send(client_socket, buffer, strlen(buffer), 0);
+    memset(buffer, 0, sizeof(buffer));
 }
 void readMail(int client_socket, char *username, char *msgNr)
 {
