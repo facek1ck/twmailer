@@ -26,7 +26,7 @@ int port;
 int handleClient(int client_socket);
 int ldapLogin(char *line); // set global char *username;
 int saveMail(char *line);
-void listMails(int client_socket, char *username);
+void listMails(int client_socket);
 void readMail(int client_socket, char *username, char *msgNr);
 int deleteMail(int client_socket, char *line);
 int getMailCount(char *path);

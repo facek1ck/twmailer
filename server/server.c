@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     socklen_t addrlen;
     pid_t pid;
 
-    //definde the server address
+    //define the server address
     struct sockaddr_in server_address, cliaddress;
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);

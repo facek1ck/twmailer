@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     char *password;
     printf("Username:");
     scanf("%s", username);
-    password = getpass("Password:"); // hide he user input
+    password = getpass("Password:"); // hide the user input
     sprintf(buffer, "%s%c%s%c%s%c", "LOGIN", '\n', username, '\n', password, '\n');
     send(network_socket, buffer, strlen(buffer), 0);
     memset(buffer, 0, sizeof(buffer));
@@ -48,7 +48,6 @@ int main(int argc, char *argv[])
 
     if (size > 0)
     {
-        printf("lol");
         buffer[size] = '\0';
         if (!(strcmp(buffer, "OK\n") == 0)) //if the login was not successfull
         {
@@ -147,7 +146,7 @@ int main(int argc, char *argv[])
             buffer[size] = '\0';
             printf("%s", buffer);
         }
-        memset(buffer, 0, sizeof buffer);
+        memset(buffer, 0, sizeof(buffer));
         fflush(stdout);
         fflush(stdin);
     } while (strcmp(buffer, "quit\n") != 0);
