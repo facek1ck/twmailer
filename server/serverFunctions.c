@@ -86,7 +86,6 @@ int handleClient(int client_socket)
 
 int ldapLogin(char *line)
 {
-<<<<<<< HEAD
     int lineCount = 0;
     char *password;
     while (line)
@@ -200,10 +199,6 @@ int ldapLogin(char *line)
 
     ldap_unbind_ext_s(ld, NULL, NULL);
     return 1;
-=======
-    // strcpy(username, "if18b101");
-    return 1; //TODO: implement LDAP login
->>>>>>> c6ff5a5c83ad2c071ceed3bb7f3f1617375dc62e
 }
 
 int saveMail(char *line)
