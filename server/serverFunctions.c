@@ -315,8 +315,61 @@ void listMails(int client_socket)
     send(client_socket, buffer, strlen(buffer), 0);
     memset(buffer, 0, sizeof(buffer));
 }
+
 void readMail(int client_socket, char *username, char *msgNr)
 {
+    char buffer[BUF];
+    memset(buffer, 0, sizeof(buffer));
+
+    DIR *dirp;
+    // char *userpath = strcat("/", username);
+    char *userpath = "if18b099";
+    dirp = opendir(userpath);
+
+    if (dirp != NULL) // opendir returns NULL if couldn't open directory
+    {
+        //REMOVE STATIC
+        // char *message = strcat(msgNr, ".txt");
+
+        FILE *file = fopen("if18b099/1.txt", "r");
+        // FILE *file = fopen(strcat(userpath, message), "r");
+        // int text;
+        char chunk[128];
+
+        if (file)
+        {
+            // while ((text = getc(file)) != EOF)
+            //     putchar(text);
+
+            // fclose(file);
+
+            // sprintf(buffer, "%s", text);
+            // send(client_socket, buffer, strlen(buffer), 0);
+
+            while (fgets(chunk, sizeof(chunk), file) != NULL)
+            {
+                strcat(buffer, chunk);
+            }
+
+            strcat(buffer, "\n");
+            send(client_socket, buffer, strlen(buffer), 0);
+
+            fclose(file);
+        }
+        else
+        {
+            printf("File not found\n");
+            strcpy(buffer, "ERR\n");
+            send(client_socket, buffer, strlen(buffer), 0);
+        }
+    }
+    else
+    {
+        printf("Dir not found\n");
+        strcpy(buffer, "ERR\n");
+        send(client_socket, buffer, strlen(buffer), 0);
+    }
+    // checken ob datei gibt und dann printen
 }
 
 int deleteMail(int client_socket, char *line)
