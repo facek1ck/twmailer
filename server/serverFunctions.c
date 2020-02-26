@@ -90,7 +90,119 @@ int handleClient(int client_socket)
 
 int ldapLogin(char *line)
 {
-    return 1; //TODO: implement LDAP login
+    int lineCount = 0;
+    char *password;
+    while (line)
+    {
+        if (lineCount == 1) //receiver's username
+        {
+            username = line;
+        }
+        else
+        {
+            password = line;
+        }
+
+        line = strtok(NULL, "\n");
+        lineCount++;
+    }
+
+    LDAP *ld;                /* LDAP resource handle */
+    LDAPMessage *result, *e; /* LDAP result handle */
+    BerElement *ber;         /* array of attributes */
+    char *attribute;
+    char filter[50];
+    BerValue **vals;
+
+    BerValue *servercredp;
+    BerValue cred;
+    cred.bv_val = BIND_PW;
+    cred.bv_len = strlen(BIND_PW);
+    int i, rc = 0;
+
+    strcpy(filter, "uid=");
+    strcat(filter, username);
+    printf("Try login for: %s\n", filter);
+
+    const char *attribs[] = {"uid", "cn", NULL}; /* attribute array for search */
+
+    int ldapversion = LDAP_VERSION3;
+
+    /* setup LDAP connection */
+    if (ldap_initialize(&ld, LDAP_URI) != LDAP_SUCCESS)
+    {
+        fprintf(stderr, "ldap_init failed");
+        return 0;
+    }
+
+    printf("connected to LDAP server %s\n", LDAP_URI);
+
+    if ((rc = ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &ldapversion)) != LDAP_SUCCESS)
+    {
+        fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n", ldap_err2string(rc));
+        ldap_unbind_ext_s(ld, NULL, NULL);
+        return 0;
+    }
+
+    if ((rc = ldap_start_tls_s(ld, NULL, NULL)) != LDAP_SUCCESS)
+    {
+        fprintf(stderr, "ldap_start_tls_s(): %s\n", ldap_err2string(rc));
+        ldap_unbind_ext_s(ld, NULL, NULL);
+        return 0;
+    }
+
+    /* anonymous bind */
+    rc = ldap_sasl_bind_s(ld, BIND_USER, LDAP_SASL_SIMPLE, &cred, NULL, NULL, &servercredp);
+
+    if (rc != LDAP_SUCCESS)
+    {
+        fprintf(stderr, "LDAP bind error: %s\n", ldap_err2string(rc));
+        ldap_unbind_ext_s(ld, NULL, NULL);
+        return 0;
+    }
+    else
+    {
+        printf("bind successful\n");
+    }
+
+    /* perform ldap search */
+    rc = ldap_search_ext_s(ld, SEARCHBASE, SCOPE, filter, (char **)attribs, 0, NULL, NULL, NULL, 500, &result);
+
+    if (rc != LDAP_SUCCESS)
+    {
+        fprintf(stderr, "LDAP search error: %s\n", ldap_err2string(rc));
+        ldap_unbind_ext_s(ld, NULL, NULL);
+        return 0;
+    }
+
+    if (ldap_count_entries(ld, result) != 1)
+    {
+        return 0;
+    }
+    //Takes the result makes new binding with the user's name and password
+    if (ldap_first_entry(ld, result) != NULL)
+    {
+        e = ldap_first_entry(ld, result);
+        strcpy(filter, ldap_get_dn(ld, e));
+        printf("FILTER: %s\n", filter);
+
+        cred.bv_val = password;
+        cred.bv_len = strlen(password);
+        rc = ldap_sasl_bind_s(ld, filter, LDAP_SASL_SIMPLE, &cred, NULL, NULL, &servercredp);
+
+        if (rc != LDAP_SUCCESS)
+        {
+            fprintf(stderr, "LDAP search error: %s\n", ldap_err2string(rc));
+            ldap_unbind_ext_s(ld, NULL, NULL);
+            return 0;
+        }
+    }
+    ldap_value_free_len(vals);
+    ldap_memfree(attribute);
+    ldap_msgfree(result);
+
+    ldap_unbind_ext_s(ld, NULL, NULL);
+    return 1;
 }
 
 int saveMail(char *line)

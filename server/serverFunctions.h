@@ -11,8 +11,15 @@
 #include <string.h>
 #include <dirent.h>
 #include <arpa/inet.h>
+#include <ldap.h>
 
 #define BUF 1024
+#define LDAP_URI "ldap://ldap.technikum-wien.at"
+#define SEARCHBASE "dc=technikum-wien,dc=at"
+#define SCOPE LDAP_SCOPE_SUBTREE
+#define BIND_USER "" /* anonymous bind with user and pw empty */
+#define BIND_PW ""
+
 char *username;
 char *path;
 int port;
