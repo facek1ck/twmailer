@@ -69,8 +69,25 @@ int main(int argc, char *argv[])
         {
             char new_str[BUF];
             strcpy(buffer, "SEND\n");
+            int cnt = 0;
             do
             {
+                if (cnt < 3)
+                {
+                    if (cnt == 0)
+                    {
+                        printf("Receiver:");
+                    }
+                    else if (cnt == 1)
+                    {
+                        printf("Subject:");
+                    }
+                    else if (cnt == 2)
+                    {
+                        printf("Text:");
+                    }
+                }
+                cnt++;
                 fgets(new_str, BUF - 1, stdin);
                 strcat(buffer, new_str);
             } while (strcmp(new_str, ".\n") != 0);
