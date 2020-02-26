@@ -2,8 +2,8 @@
 
 int main(int argc, char *argv[])
 {
-    int port = atoi(argv[2]);
-    int ip = inet_addr(argv[1]);
+    int port = atoi(argv[2]);    //char* to int
+    int ip = inet_addr(argv[1]); //ip string to int
     char buffer[BUF];
     int size;
     int menuChoice;

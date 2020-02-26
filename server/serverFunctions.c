@@ -276,7 +276,7 @@ void listMails(int client_socket)
                 {
                     if (counter == 0)
                     {
-                        sprintf(buffer, "Mails: %d\n%d - %s",fileCount, counter, line);
+                        sprintf(buffer, "Mails: %d\n%d - %s", fileCount, counter, line);
                     }
                     else
                     {
@@ -320,20 +320,10 @@ void readMail(int client_socket, char *line)
     if (filepath != NULL)
     {
         FILE *file = fopen(filepath, "r");
-        // FILE *file = fopen(strcat(userpath, message), "r");
-        // int text;
-        char chunk[128];
+        char chunk[1024];
 
         if (file)
         {
-            // while ((text = getc(file)) != EOF)
-            //     putchar(text);
-
-            // fclose(file);
-
-            // sprintf(buffer, "%s", text);
-            // send(client_socket, buffer, strlen(buffer), 0);
-
             while (fgets(chunk, sizeof(chunk), file) != NULL)
             {
                 strcat(buffer, chunk);
@@ -353,11 +343,10 @@ void readMail(int client_socket, char *line)
     }
     else
     {
-        printf("Dir not found\n");
+        printf("File not found\n");
         strcpy(buffer, "ERR\n");
         send(client_socket, buffer, strlen(buffer), 0);
     }
-    // checken ob datei gibt und dann printen
 }
 
 int deleteMail(int client_socket, char *line)

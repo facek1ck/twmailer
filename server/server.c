@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
             pid = fork();
         }
 
-        if (pid == 0)
+        if (pid == 0) //child process
         {
             strcpy(buffer, "Welcome to myserver. PID: ");
             char firstLine[20];
@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
         }
         if (pid > 0)
         {
+            //parent process
         }
     }
     close(server_socket);
