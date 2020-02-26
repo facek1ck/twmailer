@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
         memset(buffer, 0, sizeof(buffer));
         fflush(stdout);
         fflush(stdin);
-    } while (strcmp(buffer, "quit\n") != 0);
+    } while (1);
     close(network_socket);
     return EXIT_SUCCESS;
 }
