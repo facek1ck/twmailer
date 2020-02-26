@@ -48,7 +48,6 @@ int handleClient(int client_socket)
             }
             else if (strcmp("DEL", line) == 0)
             {
-                line = strtok(NULL, "\n");
                 if (deleteMail(client_socket, line) == 1)
                 {
                     strcpy(buffer, "OK\n");
@@ -379,7 +378,40 @@ void readMail(int client_socket, char *line)
 
 int deleteMail(int client_socket, char *line)
 {
-    return 0;
+    char buffer[BUF];
+    memset(buffer, 0, sizeof(buffer));
+
+    int lineCount = 0;
+    char *msgNr;
+    while (line)
+    {
+        if (lineCount == 1) //msgNr
+        {
+            msgNr = line;
+        }
+
+        line = strtok(NULL, "\n");
+        lineCount++;
+    }
+
+    char userpath[100];
+    char *filepath = malloc(255);
+    sprintf(userpath, "%s/%s", path, username);
+    filepath = getFilePathByNumber(userpath, msgNr);
+    if (filepath != NULL)
+    {
+        if (remove(filepath) == 0)
+            printf("file deleted.");
+        else
+            printf("Delete not successful.");
+    }
+    else
+    {
+        printf("Dir or file not found\n");
+        strcpy(buffer, "ERR\n");
+        send(client_socket, buffer, strlen(buffer), 0);
+    }
+    return 1;
 }
 
 int getMailCount(char *path)
