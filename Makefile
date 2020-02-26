@@ -1,3 +1,11 @@
+first: mkdir build
+
+mkdir:
+	mkdir -p out
+
+build:
+	make -B all
+
 all: server client
 
 server: server/server.c server/serverFunctions.c server/serverFunctions.h
