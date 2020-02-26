@@ -14,7 +14,10 @@
 #include <ldap.h>
 
 #define BUF 1024
-#define LDAP_URI "ldap://ldap.technikum-wien.at"
+
+#define _DEFAULT_SOURCE
+
+#define LDAP_URI "ldap://ldap.technikum-wien.at:389"
 #define SEARCHBASE "dc=technikum-wien,dc=at"
 #define SCOPE LDAP_SCOPE_SUBTREE
 #define BIND_USER "" /* anonymous bind with user and pw empty */
