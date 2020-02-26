@@ -259,7 +259,7 @@ void listMails(int client_socket)
 
     fileCount = getMailCount(userpath);
     dirp = opendir(userpath);
-    fileCount = 0;
+    int counter = 0;
 
     while ((entry = readdir(dirp)) != NULL)
     {
@@ -274,15 +274,15 @@ void listMails(int client_socket)
             {
                 if (lineCount == 1)
                 {
-                    if (fileCount == 0)
+                    if (counter == 0)
                     {
-                        sprintf(buffer, "%d - %s", fileCount, line);
+                        sprintf(buffer, "Mails: %d\n%d - %s",fileCount, counter, line);
                     }
                     else
                     {
-                        sprintf(buffer, "%s\n%d - %s", buffer, fileCount, line);
+                        sprintf(buffer, "%s%d - %s", buffer, counter, line);
                     }
-                    fileCount++;
+                    counter++;
                     break;
                 }
                 lineCount++;
