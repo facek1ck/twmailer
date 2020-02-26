@@ -1,4 +1,3 @@
-
 #include "serverFunctions.h"
 
 int handleClient(int client_socket)
@@ -45,11 +44,7 @@ int handleClient(int client_socket)
             }
             else if (strcmp("READ", line) == 0)
             {
-                line = strtok(NULL, "\n");
-                char *username = line;
-                line = strtok(NULL, "\n");
-                char *msgNr = line;
-                readMail(client_socket, username, msgNr);
+                readMail(client_socket, line);
             }
             else if (strcmp("DEL", line) == 0)
             {
@@ -102,7 +97,7 @@ int ldapLogin(char *line)
         lineCount++;
     }
 
-    return 1;
+    return 1; //TODO: Remove this when in FH Network
 
     LDAP *ld;                /* LDAP resource handle */
     LDAPMessage *result, *e; /* LDAP result handle */
@@ -277,7 +272,7 @@ void listMails(int client_socket)
     struct dirent *entry;
     char userpath[100];
 
-    snprintf(userpath, sizeof(userpath), "%s/%s", path, "if18b101");
+    snprintf(userpath, sizeof(userpath), "%s/%s", path, username);
 
     fileCount = getMailCount(userpath);
     dirp = opendir(userpath);
@@ -287,7 +282,7 @@ void listMails(int client_socket)
     {
         if (entry->d_type == DT_REG)
         {
-            char filePath[256];
+            char *filePath = malloc(500);
             snprintf(filePath, sizeof(filePath) + sizeof(userpath), "%s/%s", userpath, entry->d_name);
             FILE *file = fopen(filePath, "r");
             char line[256];
@@ -316,22 +311,32 @@ void listMails(int client_socket)
     memset(buffer, 0, sizeof(buffer));
 }
 
-void readMail(int client_socket, char *username, char *msgNr)
+void readMail(int client_socket, char *line)
 {
     char buffer[BUF];
     memset(buffer, 0, sizeof(buffer));
 
-    DIR *dirp;
-    // char *userpath = strcat("/", username);
-    char *userpath = "if18b099";
-    dirp = opendir(userpath);
-
-    if (dirp != NULL) // opendir returns NULL if couldn't open directory
+    int lineCount = 0;
+    char *msgNr;
+    while (line)
     {
-        //REMOVE STATIC
-        // char *message = strcat(msgNr, ".txt");
+        if (lineCount == 1) //msgNr
+        {
+            msgNr = line;
+        }
 
-        FILE *file = fopen("if18b099/1.txt", "r");
+        line = strtok(NULL, "\n");
+        lineCount++;
+    }
+
+    char userpath[100];
+    char *filepath = malloc(255);
+    sprintf(userpath, "%s/%s", path, username);
+    filepath = getFilePathByNumber(userpath, msgNr);
+
+    if (filepath != NULL)
+    {
+        FILE *file = fopen(filepath, "r");
         // FILE *file = fopen(strcat(userpath, message), "r");
         // int text;
         char chunk[128];
@@ -394,4 +399,26 @@ int getMailCount(char *path)
         }
     }
     return fileCount;
+}
+
+char *getFilePathByNumber(char *userPath, char *msgNr)
+{
+    int fileCount = 0;
+    char *filePath = malloc(500);
+    DIR *dirp;
+    struct dirent *entry;
+    dirp = opendir(userPath);
+    while ((entry = readdir(dirp)) != NULL)
+    {
+        if (entry->d_type == DT_REG)
+        {
+            if (fileCount == atoi(msgNr))
+            {
+                sprintf(filePath, "%s/%s", userPath, entry->d_name);
+                return filePath;
+            }
+            fileCount++;
+        }
+    }
+    return NULL;
 }

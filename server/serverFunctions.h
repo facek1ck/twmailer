@@ -12,6 +12,7 @@
 #include <dirent.h>
 #include <arpa/inet.h>
 #include <ldap.h>
+#include <time.h>
 
 #define BUF 1024
 
@@ -30,8 +31,9 @@ int handleClient(int client_socket);
 int ldapLogin(char *line); // set global char *username;
 int saveMail(char *line);
 void listMails(int client_socket);
-void readMail(int client_socket, char *username, char *msgNr);
+void readMail(int client_socket, char *line);
 int deleteMail(int client_socket, char *line);
 int getMailCount(char *path);
+char *getFilePathByNumber(char *userPath, char *msgNr);
 
 #endif
