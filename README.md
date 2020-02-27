@@ -1,21 +1,23 @@
 # twmailer
+
 This is an educational project for VSYS @FHTW
 
 ## How to run?
 
-### Server
-
-```bash 
-make server
-cd out
-./myserver
+```bash
+make
 ```
 
+### Server
+
+```bash
+cd out
+./myserver [PORT] [mail_folder]
+```
 
 ### Client(s)
 
 ```bash
-make client
 cd out
-./myclient
+./myclient [SERVER_IP] [SERVER_PORT]
 ```
