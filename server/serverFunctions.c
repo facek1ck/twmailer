@@ -48,15 +48,7 @@ int handleClient(int client_socket)
             }
             else if (strcmp("DEL", line) == 0)
             {
-                if (deleteMail(client_socket, line) == 1)
-                {
-                    strcpy(buffer, "OK\n");
-                }
-                else
-                {
-                    strcpy(buffer, "ERR\n");
-                }
-                send(client_socket, buffer, strlen(buffer), 0);
+                deleteMail(client_socket, line);
             }
         }
         else if (size == 0)
@@ -260,35 +252,41 @@ void listMails(int client_socket)
     fileCount = getMailCount(userpath);
     dirp = opendir(userpath);
     int counter = 0;
-
-    while ((entry = readdir(dirp)) != NULL)
+    if (fileCount > 0)
     {
-        if (entry->d_type == DT_REG)
+        while ((entry = readdir(dirp)) != NULL)
         {
-            char *filePath = malloc(500);
-            snprintf(filePath, sizeof(filePath) + sizeof(userpath), "%s/%s", userpath, entry->d_name);
-            FILE *file = fopen(filePath, "r");
-            char line[256];
-            int lineCount = 0;
-            while (fgets(line, sizeof(line), file))
+            if (entry->d_type == DT_REG)
             {
-                if (lineCount == 1)
+                char *filePath = malloc(500);
+                snprintf(filePath, sizeof(filePath) + sizeof(userpath), "%s/%s", userpath, entry->d_name);
+                FILE *file = fopen(filePath, "r");
+                char line[256];
+                int lineCount = 0;
+                while (fgets(line, sizeof(line), file))
                 {
-                    if (counter == 0)
+                    if (lineCount == 1)
                     {
-                        sprintf(buffer, "Mails: %d\n%d - %s", fileCount, counter, line);
+                        if (counter == 0)
+                        {
+                            sprintf(buffer, "Mails: %d\n%d - %s", fileCount, counter, line);
+                        }
+                        else
+                        {
+                            sprintf(buffer, "%s%d - %s", buffer, counter, line);
+                        }
+                        counter++;
+                        break;
                     }
-                    else
-                    {
-                        sprintf(buffer, "%s%d - %s", buffer, counter, line);
-                    }
-                    counter++;
-                    break;
+                    lineCount++;
                 }
-                lineCount++;
+                fclose(file);
             }
-            fclose(file);
         }
+    }
+    else
+    {
+        sprintf(buffer, "Mails: %d\n", fileCount);
     }
     send(client_socket, buffer, strlen(buffer), 0);
     memset(buffer, 0, sizeof(buffer));
@@ -383,6 +381,7 @@ int deleteMail(int client_socket, char *line)
         printf("Dir or file not found\n");
         strcpy(buffer, "ERR\n");
         send(client_socket, buffer, strlen(buffer), 0);
+        return 0;
     }
     return 1;
 }
@@ -391,16 +390,16 @@ int getMailCount(char *path)
 {
     int fileCount = 0;
     //path to username
-
-    DIR *dirp;
+    DIR *dirp = opendir(path);
     struct dirent *entry;
-
-    dirp = opendir(path);
-    while ((entry = readdir(dirp)) != NULL)
+    if (dirp)
     {
-        if (entry->d_type == DT_REG)
+        while ((entry = readdir(dirp)) != NULL)
         {
-            fileCount++;
+            if (entry->d_type == DT_REG)
+            {
+                fileCount++;
+            }
         }
     }
     return fileCount;
