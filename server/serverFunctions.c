@@ -390,7 +390,6 @@ int getMailCount(char *path)
 {
     int fileCount = 0;
     //path to username
-
     DIR *dirp = opendir(path);
     struct dirent *entry;
     if (dirp)
@@ -427,4 +426,3 @@ char *getFilePathByNumber(char *userPath, char *msgNr)
     }
     return NULL;
 }
-
